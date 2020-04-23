@@ -13,6 +13,7 @@ namespace Employee_Management.Controllers
     /// <summary>
     /// Represents the Employee Controller class.
     /// </summary>
+    [Authorize]
     public class EmployeesController : ApiController
     {
         private IEmployeeInfoReceiver _employeesInfo;
