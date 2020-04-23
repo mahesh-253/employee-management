@@ -2,6 +2,7 @@
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Notifications;
@@ -22,7 +23,25 @@ namespace Employee_Management
         {
             app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions() { ExpireTimeSpan = TimeSpan.FromSeconds(45) });
+            app.UseCookieAuthentication(new CookieAuthenticationOptions()
+            {
+                AuthenticationMode = AuthenticationMode.Active,
+                LoginPath = new PathString("/"),
+                LogoutPath = new PathString("/"),
+                CookieSecure = CookieSecureOption.Always,
+                CookieName = AuthenticationConfig.ClientId + DateTime.Now.ToShortTimeString(),
+                Provider = new CookieAuthenticationProvider
+                {
+                    OnResponseSignIn = context =>
+                    {
+                        context.Properties.AllowRefresh = false;
+                        context.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(30);
+                    }
+                },
+                CookiePath = "/",
+                ExpireTimeSpan = TimeSpan.FromSeconds(30),
+                SlidingExpiration = true
+            });
             
             app.UseOpenIdConnectAuthentication(
                 new OpenIdConnectAuthenticationOptions
